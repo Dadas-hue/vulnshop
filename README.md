@@ -1,5 +1,10 @@
 # vulnshop SQL注入靶场
 如需运行项目，直接在vulnshop目录下执行mvn spring-boot:run即可
+# 技术栈
+maven3 
+java23 
+springboot
+# 运行方式
 cd vulnshop
 mvn spring-boot:run
 ## 开发进度
