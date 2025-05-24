@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服务器错误 - VulnShop</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-5 text-center">
+                        <div class="mb-4">
+                            <i class="bi bi-server text-danger" style="font-size: 4rem;"></i>
+                        </div>
+                        <h2 class="mb-3">服务器内部错误 (500)</h2>
+                        <p class="mb-3 text-muted">很抱歉，服务器在处理您的请求时发生了内部错误。</p>
+                        <p class="mb-3">请稍后再试，如果问题持续存在，请联系管理员。</p>
+                        
+                        <div class="alert alert-danger my-4" th:if="${message}">
+                            <p><strong>错误信息：</strong> <span th:text="${message}">error message</span></p>
+                            <p th:if="${trace}"><strong>追踪信息：</strong> <span th:text="${trace}">stack trace</span></p>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <a href="/" class="btn btn-primary me-2">返回首页</a>
+                            <a href="javascript:history.back();" class="btn btn-outline-secondary">返回上一页</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

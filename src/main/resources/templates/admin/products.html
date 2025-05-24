@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/layout :: head('商品管理')"></head>
+<body>
+    <!-- 侧边栏 -->
+    <nav th:replace="admin/layout :: sidebar('products')"></nav>
+    
+    <!-- 内容区域 -->
+    <div class="content">
+        <!-- 顶部导航 -->
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container-fluid px-0">
+                <h1 class="header-title">商品管理</h1>
+                <div class="ms-auto">
+                    <span class="text-muted me-2" th:if="${adminUsername}">
+                        <i class="bi bi-person-circle"></i>
+                        <span th:text="${adminUsername}">管理员</span>
+                    </span>
+                    <a th:href="@{/admin/logout}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-box-arrow-right"></i> 退出
+                    </a>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="container-fluid px-0">
+            <!-- 错误信息提示 -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                <span th:text="${error}">错误信息</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            
+            <!-- 搜索区域 -->
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">商品搜索</h5>
+                        <div class="vulnerability-badge">SQL注入</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input type="text" id="searchKeyword" class="form-control" placeholder="输入商品名称或描述搜索">
+                                <button class="btn btn-primary" type="button" id="searchBtn">搜索</button>
+                            </div>
+                            <div class="form-text text-danger">
+                                <i class="bi bi-exclamation-triangle"></i> 
+                                注入提示：该搜索功能存在SQL注入漏洞，输入 <code>' OR '1'='1</code> 试试
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 商品列表 -->
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">商品列表</h5>
+                        <a th:href="@{/admin/products/add}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-plus-lg"></i> 添加商品
+                        </a>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>商品图片</th>
+                                    <th>商品名称</th>
+                                    <th>价格</th>
+                                    <th>库存</th>
+                                    <th>上架时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${products == null || products.empty}">
+                                    <td colspan="7" class="text-center">暂无商品数据</td>
+                                </tr>
+                                <tr th:each="product : ${products}" th:if="${products != null && !products.empty}">
+                                    <td th:text="${product.id}">1</td>
+                                    <td>
+                                        <img th:if="${product.image_url != null}" 
+                                             th:src="${product.image_url}" 
+                                             src="/images/products/default.jpg" 
+                                             alt="商品图片" 
+                                             style="width: 50px; height: 50px; object-fit: cover;">
+                                        <img th:if="${product.image_url == null}" 
+                                             src="/images/products/default.jpg" 
+                                             alt="默认图片" 
+                                             style="width: 50px; height: 50px; object-fit: cover;">
+                                    </td>
+                                    <td th:text="${product.name}">商品名称</td>
+                                    <td th:text="${'¥' + product.price}">¥99.00</td>
+                                    <td th:text="${product.stock}">100</td>
+                                    <td th:text="${#dates.format(product.create_time, 'yyyy-MM-dd HH:mm:ss')}">2024-01-01</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                        <button class="btn btn-sm btn-outline-danger">删除</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 分页 -->
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">上一页</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">下一页</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="admin/layout :: footer"></footer>
+    <th:block th:replace="admin/layout :: scripts"></th:block>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 搜索功能
+            document.getElementById('searchBtn').addEventListener('click', function() {
+                const keyword = document.getElementById('searchKeyword').value;
+                
+                // 发送AJAX请求
+                fetch(`/admin/searchProduct?keyword=${encodeURIComponent(keyword)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const tbody = document.querySelector('table tbody');
+                        tbody.innerHTML = '';
+                        
+                        if (data.length === 0) {
+                            const row = document.createElement('tr');
+                            row.innerHTML = '<td colspan="7" class="text-center">没有找到符合条件的商品</td>';
+                            tbody.appendChild(row);
+                        } else {
+                            data.forEach(product => {
+                                const row = document.createElement('tr');
+                                
+                                // 处理可能的错误信息
+                                if (product.error) {
+                                    row.innerHTML = `<td colspan="7" class="text-center text-danger">${product.error}</td>`;
+                                } else {
+                                    const imageUrl = product.image_url || '/images/products/default.jpg';
+                                    const createTime = product.create_time ? new Date(product.create_time).toLocaleString() : 'N/A';
+                                    
+                                    row.innerHTML = `
+                                        <td>${product.id || ''}</td>
+                                        <td>
+                                            <img src="${imageUrl}" alt="商品图片" style="width: 50px; height: 50px; object-fit: cover;">
+                                        </td>
+                                        <td>${product.name || ''}</td>
+                                        <td>¥${product.price || '0.00'}</td>
+                                        <td>${product.stock || '0'}</td>
+                                        <td>${createTime}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                            <button class="btn btn-sm btn-outline-danger">删除</button>
+                                        </td>
+                                    `;
+                                }
+                                
+                                tbody.appendChild(row);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        
+                        // 显示错误信息
+                        const tbody = document.querySelector('table tbody');
+                        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">请求出错: ${error.message}</td></tr>`;
+                    });
+            });
+        });
+    </script>
+</body>
+</html> 
