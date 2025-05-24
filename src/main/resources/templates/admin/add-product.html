@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/layout :: head('添加商品')"></head>
+<body>
+    <!-- 侧边栏 -->
+    <nav th:replace="admin/layout :: sidebar('products')"></nav>
+    
+    <!-- 内容区域 -->
+    <div class="content">
+        <!-- 顶部导航 -->
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container-fluid px-0">
+                <h1 class="header-title">添加商品</h1>
+                <div class="ms-auto">
+                    <span class="text-muted me-2" th:if="${adminUsername}">
+                        <i class="bi bi-person-circle"></i>
+                        <span th:text="${adminUsername}">管理员</span>
+                    </span>
+                    <a th:href="@{/admin/logout}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-box-arrow-right"></i> 退出
+                    </a>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="container-fluid px-0">
+            <!-- 错误信息提示 -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                <span th:text="${error}">错误信息</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            
+            <!-- 成功信息提示 -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <span th:text="${success}">成功信息</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            
+            <!-- 添加商品表单 -->
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">添加商品</h5>
+                        <div>
+                            <span class="vulnerability-badge">XSS</span>
+                            <span class="vulnerability-badge">文件上传</span>
+                            <span class="vulnerability-badge">CSRF</span>
+                        </div>
+                    </div>
+                    
+                    <!-- CSRF漏洞：没有使用CSRF令牌 -->
+                    <form th:action="@{/admin/products/add}" method="post" enctype="multipart/form-data">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">商品名称 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                                <div class="form-text text-danger">
+                                    <i class="bi bi-exclamation-triangle"></i> 
+                                    XSS提示: 尝试输入 <code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="price" class="form-label">价格 <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">¥</span>
+                                    <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="stock" class="form-label">库存数量 <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="stock" name="stock" min="0" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="categoryId" class="form-label">商品分类</label>
+                                <select class="form-select" id="categoryId" name="categoryId">
+                                    <option value="1">电子产品</option>
+                                    <option value="2">服装</option>
+                                    <option value="3">食品</option>
+                                    <option value="4">图书</option>
+                                    <option value="5">其他</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">商品描述</label>
+                            <textarea class="form-control" id="description" name="description" rows="4"></textarea>
+                            <div class="form-text text-danger">
+                                <i class="bi bi-exclamation-triangle"></i> 
+                                XSS提示: 尝试输入HTML标签如 <code>&lt;img src=x onerror="alert('XSS')"&gt;</code>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="imageFile" class="form-label">商品图片</label>
+                            <input class="form-control" type="file" id="imageFile" name="imageFile">
+                            <div class="form-text text-danger">
+                                <i class="bi bi-exclamation-triangle"></i> 
+                                文件上传漏洞提示: 尝试上传.jsp或.php文件
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="imageUrl" class="form-label">图片URL</label>
+                            <input type="text" class="form-control" id="imageUrl" name="imageUrl" placeholder="或者输入图片URL">
+                            <div class="form-text text-danger">
+                                <i class="bi bi-exclamation-triangle"></i> 
+                                SSRF漏洞提示: 尝试输入内网URL如 <code>http://localhost:8080/admin/dashboard</code>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a th:href="@{/admin/products}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> 返回商品列表
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> 保存商品
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="admin/layout :: footer"></footer>
+    <th:block th:replace="admin/layout :: scripts"></th:block>
+    
+    <script>
+        // 图片预览功能
+        document.getElementById('imageFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // 如果选择了文件，清空URL输入框
+                document.getElementById('imageUrl').value = '';
+            }
+        });
+        
+        document.getElementById('imageUrl').addEventListener('input', function(e) {
+            if (e.target.value) {
+                // 如果输入了URL，清空文件选择
+                document.getElementById('imageFile').value = '';
+            }
+        });
+    </script>
+</body>
+</html> 

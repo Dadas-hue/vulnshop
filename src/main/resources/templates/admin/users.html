@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/layout :: head('用户管理')"></head>
+<body>
+    <!-- 侧边栏 -->
+    <nav th:replace="admin/layout :: sidebar('users')"></nav>
+    
+    <!-- 内容区域 -->
+    <div class="content">
+        <!-- 顶部导航 -->
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container-fluid px-0">
+                <h1 class="header-title">用户管理</h1>
+                <div class="ms-auto">
+                    <span class="text-muted me-2" th:if="${adminUsername}">
+                        <i class="bi bi-person-circle"></i>
+                        <span th:text="${adminUsername}">管理员</span>
+                    </span>
+                    <a th:href="@{/admin/logout}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-box-arrow-right"></i> 退出
+                    </a>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="container-fluid px-0">
+            <!-- 错误信息提示 -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                <span th:text="${error}">错误信息</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            
+            <!-- 搜索区域 -->
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">用户搜索</h5>
+                        <div class="vulnerability-badge">SQL注入</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input type="text" id="searchKeyword" class="form-control" placeholder="输入用户名或邮箱搜索">
+                                <button class="btn btn-primary" type="button" id="searchBtn">搜索</button>
+                            </div>
+                            <div class="form-text text-danger">
+                                <i class="bi bi-exclamation-triangle"></i> 
+                                注入提示：该搜索功能存在SQL注入漏洞，输入 <code>' OR '1'='1</code> 试试
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 用户列表 -->
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">用户列表</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">用户名</th>
+                                    <th scope="col">邮箱</th>
+                                    <th scope="col">注册时间</th>
+                                    <th scope="col">角色</th>
+                                    <th scope="col">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${users == null || users.empty}">
+                                    <td colspan="6" class="text-center">暂无用户数据，请搜索或添加用户</td>
+                                </tr>
+                                <tr th:each="user : ${users}" th:if="${users != null && !users.empty}">
+                                    <td th:text="${user.id}">1</td>
+                                    <td th:text="${user.username}">admin</td>
+                                    <td th:text="${user.email}">admin@example.com</td>
+                                    <td th:text="${#dates.format(user.create_time, 'yyyy-MM-dd HH:mm:ss')}">2024-01-01</td>
+                                    <td>
+                                        <span th:if="${user.is_admin == 1}" class="badge bg-danger">管理员</span>
+                                        <span th:if="${user.is_admin == 0}" class="badge bg-secondary">用户</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                        <button class="btn btn-sm btn-outline-danger">删除</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="admin/layout :: footer"></footer>
+    <th:block th:replace="admin/layout :: scripts"></th:block>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 搜索功能
+            document.getElementById('searchBtn').addEventListener('click', function() {
+                const keyword = document.getElementById('searchKeyword').value;
+                
+                // 发送AJAX请求
+                fetch(`/admin/searchUser?keyword=${encodeURIComponent(keyword)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const tbody = document.querySelector('#usersTable tbody');
+                        tbody.innerHTML = '';
+                        
+                        if (data.length === 0) {
+                            const row = document.createElement('tr');
+                            row.innerHTML = '<td colspan="6" class="text-center">没有找到符合条件的用户</td>';
+                            tbody.appendChild(row);
+                        } else {
+                            data.forEach(user => {
+                                const row = document.createElement('tr');
+                                
+                                // 处理可能的错误信息
+                                if (user.error) {
+                                    row.innerHTML = `<td colspan="6" class="text-center text-danger">${user.error}</td>`;
+                                } else {
+                                    const isAdmin = user.is_admin === 1;
+                                    const createTime = user.create_time ? new Date(user.create_time).toLocaleString() : 'N/A';
+                                    
+                                    row.innerHTML = `
+                                        <td>${user.id || ''}</td>
+                                        <td>${user.username || ''}</td>
+                                        <td>${user.email || ''}</td>
+                                        <td>${createTime}</td>
+                                        <td>
+                                            <span class="badge ${isAdmin ? 'bg-danger' : 'bg-secondary'}">${isAdmin ? '管理员' : '用户'}</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">编辑</button>
+                                            <button class="btn btn-sm btn-outline-danger">删除</button>
+                                        </td>
+                                    `;
+                                }
+                                
+                                tbody.appendChild(row);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        
+                        // 显示错误信息
+                        const tbody = document.querySelector('#usersTable tbody');
+                        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">请求出错: ${error.message}</td></tr>`;
+                    });
+            });
+        });
+    </script>
+</body>
+</html> 

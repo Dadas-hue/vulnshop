@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/layout :: head('订单管理')"></head>
+<body>
+    <!-- 侧边栏 -->
+    <nav th:replace="admin/layout :: sidebar('orders')"></nav>
+    
+    <!-- 内容区域 -->
+    <div class="content">
+        <!-- 顶部导航 -->
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container-fluid px-0">
+                <h1 class="header-title">订单管理</h1>
+                <div class="ms-auto">
+                    <span class="text-muted me-2" th:if="${adminUsername}">
+                        <i class="bi bi-person-circle"></i>
+                        <span th:text="${adminUsername}">管理员</span>
+                    </span>
+                    <a th:href="@{/admin/logout}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-box-arrow-right"></i> 退出
+                    </a>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="container-fluid px-0">
+            <!-- 错误信息提示 -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                <span th:text="${error}">错误信息</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            
+            <!-- 订单状态筛选 -->
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <ul class="nav nav-pills">
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="#">全部订单</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">待支付</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">已支付</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">已发货</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">已完成</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">已取消</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 订单列表 -->
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">订单列表</h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>订单编号</th>
+                                    <th>用户名</th>
+                                    <th>订单金额</th>
+                                    <th>订单状态</th>
+                                    <th>支付方式</th>
+                                    <th>下单时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${orders == null || orders.empty}">
+                                    <td colspan="7" class="text-center">暂无订单数据</td>
+                                </tr>
+                                <tr th:each="order : ${orders}" th:if="${orders != null && !orders.empty}">
+                                    <td th:text="${order.id}">ORD20240601001</td>
+                                    <td th:text="${order.username}">user001</td>
+                                    <td th:text="${'¥' + order.total_amount}">¥299.00</td>
+                                    <td>
+                                        <span th:if="${order.status == 0}" class="badge bg-warning">待支付</span>
+                                        <span th:if="${order.status == 1}" class="badge bg-info">已支付</span>
+                                        <span th:if="${order.status == 2}" class="badge bg-primary">已发货</span>
+                                        <span th:if="${order.status == 3}" class="badge bg-success">已完成</span>
+                                        <span th:if="${order.status == 4}" class="badge bg-danger">已取消</span>
+                                    </td>
+                                    <td th:text="${order.payment_method}">支付宝</td>
+                                    <td th:text="${#dates.format(order.create_time, 'yyyy-MM-dd HH:mm:ss')}">2024-06-01 10:30:45</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary">详情</button>
+                                        <button class="btn btn-sm btn-outline-info">发货</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 分页 -->
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">上一页</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">下一页</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="admin/layout :: footer"></footer>
+    <th:block th:replace="admin/layout :: scripts"></th:block>
+</body>
+</html> 

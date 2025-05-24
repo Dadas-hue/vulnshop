@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>vulnshop - SQL注入靶场</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar { 
+            background: linear-gradient(135deg, #1976d2, #2196f3);
+            padding: 1rem 0;
+        }
+        .navbar-brand, .nav-link { 
+            color: #fff !important;
+            font-weight: 500;
+        }
+        .nav-link:hover {
+            color: rgba(255,255,255,0.8) !important;
+        }
+        .hero-carousel {
+            margin-bottom: 3rem;
+        }
+        .hero-carousel .carousel-item {
+            height: 400px;
+            background-size: cover;
+            background-position: center;
+        }
+        .hero-carousel .carousel-caption {
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .product-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            margin-bottom: 30px;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        .product-image {
+            height: 200px;
+            object-fit: cover;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+        }
+        .product-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin: 10px 0;
+            color: #333;
+        }
+        .product-price {
+            color: #e53935;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .product-description {
+            color: #666;
+            font-size: 0.9rem;
+            height: 48px;
+            overflow: hidden;
+        }
+        .section-title {
+            text-align: center;
+            margin: 40px 0;
+            color: #1976d2;
+            font-weight: 600;
+        }
+        .footer {
+            background: #1976d2;
+            color: #fff;
+            padding: 20px 0;
+            margin-top: 50px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="/products">
+            <i class="bi bi-shop"></i> vulnshop
+        </a>
+        <div class="d-flex">
+            <a class="nav-link me-3" href="/products">
+                <i class="bi bi-grid"></i> 商品列表
+            </a>
+            <a th:if="${session.user != null}" class="nav-link me-3" href="/orders">
+                <i class="bi bi-box"></i> 我的订单
+            </a>
+            <a th:if="${session.user != null}" class="nav-link me-3" href="/cart">
+                <i class="bi bi-cart"></i> 购物车
+            </a>
+            <a class="nav-link me-3" href="/admin/login">
+                <i class="bi bi-shield-lock"></i> 后台管理
+            </a>
+            <a th:if="${session.user == null}" class="nav-link" href="/">
+                <i class="bi bi-person"></i> 登录
+            </a>
+            <a th:if="${session.user != null}" class="nav-link" href="/logout">
+                <i class="bi bi-box-arrow-right"></i> 退出
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div id="heroCarousel" class="carousel slide hero-carousel" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-label="第1张幻灯片"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="第2张幻灯片"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="第3张幻灯片"></button>
+    </div>
+    <div class="carousel-inner">
+        <div class="carousel-item active" style="background-image: url('/images/products/pen.jpg')" aria-label="精美钢笔">
+            <div class="carousel-caption">
+                <h2>精美钢笔</h2>
+                <p>优雅的书写体验，尽在vulnshop</p>
+                <a href="/products" class="btn btn-light">立即选购</a>
+            </div>
+        </div>
+        <div class="carousel-item" style="background-image: url('/images/products/gold.jpg')">
+            <div class="carousel-caption">
+                <h2>奢华首饰</h2>
+                <p>精选黄金首饰，彰显品味</p>
+                <a href="/products" class="btn btn-light">立即选购</a>
+            </div>
+        </div>
+        <div class="carousel-item" style="background-image: url('/images/products/boots.jpg')">
+            <div class="carousel-caption">
+                <h2>时尚工装靴</h2>
+                <p>舒适耐用，助你探索世界</p>
+                <a href="/products" class="btn btn-light">立即选购</a>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev" aria-label="上一张">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">上一张</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next" aria-label="下一张">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">下一张</span>
+    </button>
+</div>
+
+<div class="container">
+    <h2 class="section-title">热门商品</h2>
+    <div class="row">
+        <div class="col-md-3 mb-4" th:each="product : ${products}">
+            <div class="card product-card">
+                <img th:if="${product.imageUrl}" 
+                     th:src="${product.imageUrl}" 
+                     class="product-image"
+                     th:alt="${product.name}"
+                     th:title="${product.name}"
+                     aria-label="商品图片">
+                <div class="card-body">
+                    <h5 class="product-title" th:text="${product.name}"></h5>
+                    <p class="product-description" th:text="${product.description}"></p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="product-price">￥<span th:text="${product.price}"></span></span>
+                        <a th:href="@{'/product/' + ${product.id}}" class="btn btn-primary">
+                            <i class="bi bi-cart-plus"></i> 查看详情
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <div class="container">
+        <p class="mb-0">vulnshop SQL注入靶场 &copy; 2024</p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

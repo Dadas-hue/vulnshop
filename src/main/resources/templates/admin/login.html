@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理 - 登录</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        .login-container {
+            max-width: 450px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-header h2 {
+            color: #333;
+            font-weight: 600;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #e74c3c;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .login-btn:hover {
+            background-color: #c0392b;
+        }
+        .injection-hint {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #ffebee;
+            border-left: 4px solid #f44336;
+            font-size: 14px;
+        }
+        .text-danger {
+            color: #e74c3c !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-container">
+            <div class="login-header">
+                <h2>后台管理系统</h2>
+                <p class="text-secondary">VulnShop 管理员登录</p>
+            </div>
+            
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+            
+            <form method="post" th:action="@{/admin/login}">
+                <div class="mb-3">
+                    <label for="username" class="form-label">用户名</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">密码</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <div class="mb-3">
+                    <button type="submit" class="btn login-btn">登录</button>
+                </div>
+            </form>
+            
+            <div class="injection-hint">
+                <strong>安全提示：</strong> 此登录页面现已使用参数化查询和Cookie验证，防止SQL注入攻击。<br>
+                <code>使用参数化查询：SELECT * FROM users WHERE username = :username AND password = :password AND is_admin = true</code><br>
+                <code>登录成功后将设置安全Cookie用于会话验证</code>
+            </div>
+            
+            <div class="mt-3 text-center">
+                <a href="/" class="text-decoration-none">返回前台首页</a>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
