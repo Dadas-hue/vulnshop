@@ -8,6 +8,9 @@ VulnShop是一个专门用于Web安全测试和学习的靶场应用，包含多
 cd vulnshop
 mvn spring-boot:run
 ```
+访问
+前端 localhost:8080 他会占用你的8080端口
+后台 localhost:8080/admin/login
 
 ## 包含的漏洞类型
 
